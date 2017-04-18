@@ -1,8 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import Pin from './Pin';
 import bodyParser from 'body-parser';
 import path from 'path';
+
+import Player from './models/Player';
+import Location from './models/Location';
 
 mongoose.Promise = Promise;
 mongoose.connect('mongodb://localhost/gpsgame');
@@ -28,15 +30,31 @@ http.listen(5000);
 
 io.on('connection', function (user) {
   console.log('User ' + user.id +' is connected.');
+
+  const player = new Player({
+    playerId: user.id
+  });
+
+  player.save();
+
   user.on('disconnect', function() {
     console.log('User ' + user.id +' is disconnected.');
   });
+
   user.on('changeLocation', function (lat, long, accuracy) {
-    const pin = new Pin({lat, long, accuracy});
-    pin.save();
+
+    const location = new Location({
+      lat,
+      long,
+      accuracy,
+      player: player._id
+    });
+    location.save();
     console.log('New location for user '+user.id+':', lat, long, accuracy);
   });
+
   user.on('message', function (msg) {
     console.log(msg);
   });
+
 });

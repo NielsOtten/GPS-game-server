@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export default mongoose.model('Pin', {
+export default mongoose.model('Location', {
   lat: {
     type:Number,
     required: true
@@ -12,6 +12,10 @@ export default mongoose.model('Pin', {
   accuracy: {
     type:Number,
     required: true
+  },
+  player: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Player'
   },
   timestamp: {
     type: Date,
