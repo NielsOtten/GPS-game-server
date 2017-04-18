@@ -71,7 +71,6 @@ io.on('connection', user => {
         return player._id;
       }))
       .then(playerId => {
-        console.log(playerId);
         const id = mongoose.Types.ObjectId(playerId);
         return Location.findOne({
           player: id
@@ -79,6 +78,11 @@ io.on('connection', user => {
       })
       .then(location => {
         // THIS IS THE LATEST LOCATION.
+
+
+
+
+
       });
   });
 
