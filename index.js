@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 
 http.listen(5000);
 
-io.on('connection', function (user) {
+io.on('connection', user => {
   console.log('User ' + user.id +' is connected.');
 
   const player = new Player({
@@ -41,7 +41,7 @@ io.on('connection', function (user) {
   // Add user to global array.
   users.push(user);
 
-  user.on('disconnect', function() {
+  user.on('disconnect', () => {
 
     // Remove user from list.
     users = users.filter(el => {
@@ -51,7 +51,7 @@ io.on('connection', function (user) {
     console.log('User ' + user.id +' is disconnected.');
   });
 
-  user.on('changeLocation', function (lat, long, accuracy) {
+  user.on('changeLocation', (lat, long, accuracy) => {
 
     const location = new Location({
       lat,
@@ -65,7 +65,24 @@ io.on('connection', function (user) {
     console.log('New location for user '+user.id+':', lat, long, accuracy);
   });
 
-  user.on('message', function (msg) {
+  user.on('shoot', () => {
+    Player.findOne({playerId: user.id})
+      .then((player => {
+        return player._id;
+      }))
+      .then(playerId => {
+        console.log(playerId);
+        const id = mongoose.Types.ObjectId(playerId);
+        return Location.findOne({
+          player: id
+        }).sort({timestamp: -1})
+      })
+      .then(location => {
+        // THIS IS THE LATEST LOCATION.
+      });
+  });
+
+  user.on('message', msg => {
     console.log(msg);
   });
 
