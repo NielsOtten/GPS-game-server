@@ -76,31 +76,11 @@ io.on('connection', user => {
     const enemies = getUsersWithout(player.playerId);
     const enemiesHit = calculateShot(weaponType, user.location, user.angle, enemies);
 
-    if (enemiesHit !== 'undefined' || enemiesHit !== null) {
+    if (enemiesHit != 'undefined' || enemiesHit != null) {
       enemiesHit.forEach(enemy => {
         enemy.socket.emit('hit');
       });
     }
-
-    console.log(enemiesHit);
-    // weapon(weaponType, )
-
-
-
-    // Player.findOne({playerId: user.id})
-    //   .then((player => {
-    //     return player._id;
-    //   }))
-    //   .then(playerId => {
-    //     return Location.findOne({
-    //       player: mongoose.Types.ObjectId(playerId)
-    //     }).sort({timestamp: -1})
-    //   })
-    //   .then(location => {
-    //     // THIS IS THE LATEST LOCATION.
-    //
-    //
-    //   });
   });
 
   user.on('message', msg => {
