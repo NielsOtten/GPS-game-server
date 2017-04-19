@@ -61,30 +61,19 @@ function calculateSniper(location, angle, enemies) {
     const lat = m * enemy.location.long + n;
     const long = (enemy.location.lat - n) / m;
 
-    console.log(enemy.location.lat > lat - 0.0040270,
-      enemy.location.lat < lat + 0.0040270,
-      angle > bearingToPlayer - 150,
-      angle < bearingToPlayer + 150);
-    console.log(enemy.location.long > long - 0.004045,
-      enemy.location.long < long + 0.004045,
-      angle > bearingToPlayer - 150,
-      angle < bearingToPlayer + 150);
-
     if (angle >= 45 && angle < 135 || angle >= 225 && angle < 315) {
-      if (enemy.location.lat > lat - 0.0040270 &&
-        enemy.location.lat < lat + 0.0040270 &&
+      if (enemy.location.lat > lat - 0.0000270 &&
+        enemy.location.lat < lat + 0.0000270 &&
         angle > bearingToPlayer - 150 &&
         angle < bearingToPlayer + 150) {
-        console.log('hit');
         enemiesHit.push(enemy);
       }
     } else {
       // Breedte van het schot
-      if (enemy.location.long > long - 0.004045 &&
-        enemy.location.long < long + 0.004045 &&
+      if (enemy.location.long > long - 0.000045 &&
+        enemy.location.long < long + 0.000045 &&
         angle > bearingToPlayer - 150 &&
         angle < bearingToPlayer + 150) {
-        console.log('hit');
         enemiesHit.push(enemy);
       }
     }
