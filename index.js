@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import path from 'path';
+import calculateShot from './weapons/calculate';
 
 import Player from './models/Player';
 import Location from './models/Location';
@@ -17,11 +18,6 @@ const io = require('socket.io')(http);
 let users = [];
 
 app.use(bodyParser.json());
-
-app.post('/postLocation', (req, res) => {
-  const pin = new Pin(req.body);
-  pin.save().then(a => res.json(a));
-});
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname+'/index.html'));
@@ -39,20 +35,22 @@ io.on('connection', user => {
   player.save();
 
   // Add user to global array.
-  users.push(user);
+  users.push({
+    socket: user,
+    playerId: user.id,
+    location: null,
+    angle: null
+  });
 
   user.on('disconnect', () => {
 
     // Remove user from list.
-    users = users.filter(el => {
-      return el.id !== user.id;
-    });
+    users = getUsersWithout(player.playerId);
 
     console.log('User ' + user.id +' is disconnected.');
   });
 
   user.on('changeLocation', (lat, long, accuracy) => {
-
     const location = new Location({
       lat,
       long,
@@ -60,34 +58,69 @@ io.on('connection', user => {
       player: player._id
     });
 
+    setUserProperty(player.playerId, 'location', location);
+
     location.save();
 
     console.log('New location for user '+user.id+':', lat, long, accuracy);
   });
 
-  user.on('shoot', () => {
-    Player.findOne({playerId: user.id})
-      .then((player => {
-        return player._id;
-      }))
-      .then(playerId => {
-        const id = mongoose.Types.ObjectId(playerId);
-        return Location.findOne({
-          player: id
-        }).sort({timestamp: -1})
-      })
-      .then(location => {
-        // THIS IS THE LATEST LOCATION.
+  user.on('changeAngle', angle => {
+    setUserProperty(player.playerId, 'angle', angle);
+    player.angle = angle;
+    player.save();
+  });
 
+  user.on('shoot', weaponType => {
+    const user = getUser(player.playerId);
+    const enemies = getUsersWithout(player.playerId);
+    const enemiesHit = calculateShot(weaponType, user.location, user.angle, enemies);
 
-
-
-
+    if (enemiesHit !== 'undefined' || enemiesHit !== null) {
+      enemiesHit.forEach(enemy => {
+        enemy.socket.emit('hit');
       });
+    }
+
+    console.log(enemiesHit);
+    // weapon(weaponType, )
+
+
+
+    // Player.findOne({playerId: user.id})
+    //   .then((player => {
+    //     return player._id;
+    //   }))
+    //   .then(playerId => {
+    //     return Location.findOne({
+    //       player: mongoose.Types.ObjectId(playerId)
+    //     }).sort({timestamp: -1})
+    //   })
+    //   .then(location => {
+    //     // THIS IS THE LATEST LOCATION.
+    //
+    //
+    //   });
   });
 
   user.on('message', msg => {
     console.log(msg);
   });
-
 });
+
+function setUserProperty(playerId, property, value) {
+  const user = getUser(playerId);
+  user[property] = value;
+}
+
+function getUser(playerId) {
+  return users.find(user => {
+    if (user.playerId == playerId) return user;
+  });
+}
+
+function getUsersWithout(playerId) {
+  return users.filter(user => {
+    return user.playerId !== playerId;
+  });
+}

@@ -8,6 +8,9 @@ export default mongoose.model('Player', {
   name: {
     type: String
   },
+  angle: {
+    type: Number
+  },
   timestamp: {
     type: Date,
     default: () => new Date(),
