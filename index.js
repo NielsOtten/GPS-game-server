@@ -28,22 +28,41 @@ http.listen(5000);
 io.on('connection', user => {
   console.log('User ' + user.id +' is connected.');
 
-  const player = new Player({
-    playerId: user.id
-  });
+  let player = null;
+  let team = null;
 
-  player.save();
+  user.on('loginPlayer', playerId => {
 
-  // Add user to global array.
-  users.push({
-    socket: user,
-    playerId: user.id,
-    location: null,
-    angle: null
+    team = getLowestTeam();
+
+    // Create user when you don't have an account yet.
+    if (playerId == '') {
+      player = createUser(user);
+      user.emit("loggedIn", player.playerId);
+      users.push({
+        socket: user,
+        playerId: playerId,
+        location: null,
+        angle: null,
+        team: team
+      });
+    } else {
+      Player.findOne({'playerId': playerId})
+        .then(el => {
+          player = el;
+          users.push({
+            socket: user,
+            location: null,
+            playerId: playerId,
+            angle: null,
+            team: team
+          });
+          user.emit("loggedIn", player.playerId);
+        });
+    }
   });
 
   user.on('disconnect', () => {
-
     // Remove user from list.
     users = getUsersWithout(player.playerId);
 
@@ -85,16 +104,43 @@ io.on('connection', user => {
       });
     }
   });
-
-  user.on('message', msg => {
-
-    console.log(msg);
-  });
 });
+
+function createUser(user) {
+  const player = new Player({
+    playerId: user.id
+  });
+  player.save();
+  return player;
+}
+
+function getLowestTeam() {
+  if (users == 'undefined' && users == null && users.length <= 0) return false;
+
+  let teamRed = 0;
+  let teamBlue = 0;
+
+  users.forEach(user => {
+    if (user.team !== 'undefined' && user.team !== null) {
+      switch (user.team) {
+        case 'red':
+          teamRed++;
+          break;
+        case 'blue':
+          teamBlue++;
+          break;
+      }
+    }
+  });
+
+  return teamBlue >= teamRed ? 'blue' : 'red';
+}
 
 function setUserProperty(playerId, property, value) {
   const user = getUser(playerId);
-  user[property] = value;
+  if (user != 'undefined' && user != null) {
+    user[property] = value;
+  }
 }
 
 function getUser(playerId) {
