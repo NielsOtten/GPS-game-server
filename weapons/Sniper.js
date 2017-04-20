@@ -44,9 +44,10 @@ function calculateSniper(location, angle, enemies) {
   const n = shotLat - m * shotLong;
 
   let enemiesHit = [];
-
+  if (enemies == 'undefined' && enemies == null && enemies.length <= 0) return;
   enemies.forEach(enemy => {
-    if (location == 'undefined' || location == null) return;
+    if (location == 'undefined' && location == null
+      && enemy.location == 'undefined' && enemy.location == null) return;
     // Hoek tot een persoon
     // Hiermee kun je een lijn tussen jouw locatie en de locatie van
     // de player opstellen.
@@ -64,9 +65,11 @@ function calculateSniper(location, angle, enemies) {
     if (angle >= 45 && angle < 135 || angle >= 225 && angle < 315) {
       if (enemy.location.lat > lat - 0.0000270 &&
         enemy.location.lat < lat + 0.0000270 &&
+
         angle > bearingToPlayer - 150 &&
         angle < bearingToPlayer + 150) {
         enemiesHit.push(enemy);
+        console.log('hit');
       }
     } else {
       // Breedte van het schot
@@ -75,6 +78,7 @@ function calculateSniper(location, angle, enemies) {
         angle > bearingToPlayer - 150 &&
         angle < bearingToPlayer + 150) {
         enemiesHit.push(enemy);
+        console.log('hit');
       }
     }
   });

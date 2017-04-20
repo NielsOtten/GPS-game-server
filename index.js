@@ -62,6 +62,9 @@ io.on('connection', user => {
 
     location.save();
 
+    // Send location to all other users.
+    user.broadcast.emit('changeLocation', {lat, long, accuracy, playerId: player.playerId});
+
     console.log('New location for user '+user.id+':', lat, long, accuracy);
   });
 
@@ -76,7 +79,7 @@ io.on('connection', user => {
     const enemies = getUsersWithout(player.playerId);
     const enemiesHit = calculateShot(weaponType, user.location, user.angle, enemies);
 
-    if (enemiesHit != 'undefined' || enemiesHit != null) {
+    if (enemiesHit != 'undefined' && enemiesHit != null) {
       enemiesHit.forEach(enemy => {
         enemy.socket.emit('hit');
       });
@@ -84,6 +87,7 @@ io.on('connection', user => {
   });
 
   user.on('message', msg => {
+
     console.log(msg);
   });
 });
