@@ -82,7 +82,7 @@ io.on('connection', user => {
     location.save();
 
     // Send location to all other users.
-    user.broadcast.emit('changeLocation', {lat, long, accuracy, playerId: player.playerId});
+    sendTeamMembers(team, player.playerId, 'changeLocation', {lat, long, accuracy, playerId: player.playerId});
 
     console.log('New location for user '+user.id+':', lat, long, accuracy);
   });
@@ -115,7 +115,7 @@ function createUser(user) {
 }
 
 function getLowestTeam() {
-  if (users == 'undefined' && users == null && users.length <= 0) return false;
+  if (users == 'undefined' || users == null || users.length <= 0) return false;
 
   let teamRed = 0;
   let teamBlue = 0;
@@ -133,7 +133,7 @@ function getLowestTeam() {
     }
   });
 
-  return teamBlue >= teamRed ? 'blue' : 'red';
+  return teamBlue >= teamRed ? 'red' : 'blue';
 }
 
 function setUserProperty(playerId, property, value) {
@@ -141,6 +141,18 @@ function setUserProperty(playerId, property, value) {
   if (user != 'undefined' && user != null) {
     user[property] = value;
   }
+}
+
+function sendTeamMembers(team, playerId, subject, message) {
+  if (users == 'undefined' && users == null && users.length <= 0 &&
+  team == 'undefined' && subject == 'undefined' && message == 'undefined') return false;
+
+  users.forEach(user => {
+    console.log(user.team, team, playerId, user.playerId);
+    if (user.team === team && playerId !== user.playerId) {
+      user.socket.emit(subject, message);
+    }
+  })
 }
 
 function getUser(playerId) {

@@ -46,8 +46,9 @@ function calculateSniper(location, angle, enemies) {
   let enemiesHit = [];
   if (enemies == 'undefined' && enemies == null && enemies.length <= 0) return;
   enemies.forEach(enemy => {
-    if (location == 'undefined' && location == null
-      && enemy.location == 'undefined' && enemy.location == null) return;
+    if (location == 'undefined' || location == null
+      || enemy.location == 'undefined' || enemy.location == null) return;
+
     // Hoek tot een persoon
     // Hiermee kun je een lijn tussen jouw locatie en de locatie van
     // de player opstellen.
@@ -61,6 +62,7 @@ function calculateSniper(location, angle, enemies) {
     const bearingToPlayer = (unRadians(θ) + 360) % 360;
     const lat = m * enemy.location.long + n;
     const long = (enemy.location.lat - n) / m;
+
 
     if (angle >= 45 && angle < 135 || angle >= 225 && angle < 315) {
       if (enemy.location.lat > lat - 0.0000270 &&
